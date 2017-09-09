@@ -22,7 +22,7 @@ before_script:
   - npm install -g istanbul
 
 after_success:
-  - istanbul cover ./node_modules/mocha/bin/_mocha --reporter lcovonly -- -R spec
+  - istanbul cover ./node_modules/mocha/bin/_mocha
   - codecov --disable=gcov
   - if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then valgrind -v --tool=memcheck --leak-check=full --show-leak-kinds=all --track-origins=yes node node_modules/mocha/bin/mocha; fi
 
