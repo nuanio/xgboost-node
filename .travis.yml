@@ -1,0 +1,36 @@
+language: node_js
+
+addons:
+  apt:
+   sources:
+      - ubuntu-toolchain-r-test
+   packages:
+      - valgrind
+      - libgtest-dev
+      - libboost-dev
+
+node_js:
+  - "6"
+  - "8"
+
+sudo: false
+dist: trusty
+osx_image: xcode8.3
+
+before_script:
+  - npm install -g codecov
+  - npm install -g istanbul
+
+after_success:
+  - istanbul cover ./node_modules/mocha/bin/_mocha --reporter lcovonly -- -R spec
+  - codecov
+  - if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then valgrind -v --tool=memcheck --leak-check=full --show-leak-kinds=all --track-origins=yes node node_modules/mocha/bin/mocha; fi
+
+os:
+  - linux
+  - osx
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
