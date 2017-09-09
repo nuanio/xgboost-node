@@ -1,0 +1,11 @@
+node_modules
+build
+.DS_Store
+lib/libxgboost.a
+lib/libxgboost.dylib
+.vscode/settings.json
+.vscode/tags
+.vscode/c_cpp_properties.json
+xgboost/xgboost
+coverage
+readme.html
