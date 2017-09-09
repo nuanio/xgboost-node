@@ -46,8 +46,8 @@ npm install
 + [x] Matrix API
 + [x] Model API
 + [x] Prediction API
-+ [ ] Windows Support
 + [ ] Async API
++ [ ] Windows Support
 + [ ] Training API
 + [ ] Visualization API
 
