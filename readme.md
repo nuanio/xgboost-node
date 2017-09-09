@@ -1,6 +1,6 @@
 ## XGBoost-Node
 
-[![license](http://dmlc.github.io/img/apache2.svg)](./LICENSE)
+[![Build Status](https://travis-ci.org/nuanio/xgboost-node.svg?branch=update-readme)](https://travis-ci.org/nuanio/xgboost-node) [![codecov](https://codecov.io/gh/nuanio/xgboost-node/branch/master/graph/badge.svg)](https://codecov.io/gh/nuanio/xgboost-node) [![license](http://dmlc.github.io/img/apache2.svg)](./LICENSE)
 
 eXtreme Gradient Boosting Package in Node.js
 
@@ -14,9 +14,7 @@ The package is made to run existing XGBoost model with Node.js easily.
 
 + Both dense and sparse matrix input are supported, and missing value is handled.
 
-+ Supports Linux, macOS and Windows.
-
-
++ Supports Linux, macOS.
 
 ### Install
 
@@ -48,6 +46,7 @@ npm install
 + [x] Matrix API
 + [x] Model API
 + [x] Prediction API
++ [ ] Windows Support
 + [ ] Async API
 + [ ] Training API
 + [ ] Visualization API
