@@ -157,7 +157,7 @@ describe('base', () => {
         callback();
       });
     }
-    while (i < 50000) {
+    while (i < 5000) {
       input.forEach((v) => {
         const task = async.apply(checkAsync,
           new Float32Array(v.array), 0, 0, v.type
@@ -166,7 +166,7 @@ describe('base', () => {
       });
       i++;
     }
-    async.parallelLimit(tasks, 10000, (err) => {
+    async.parallelLimit(tasks, 1000, (err) => {
       console.log('async.parallel tasks end');
       expect(err).to.be.null;
       done();
