@@ -33,11 +33,11 @@
   "license": "Apache-2.0",
   "dependencies": {
     "bindings": "^1.2.1",
-    "nan": "^2.6.2"
+    "nan": "^2.6.2",
+    "async": "^2.5.0"
   },
   "devDependencies": {
     "@types/node": "^8.0.9",
-    "async": "^2.5.0",
     "chai": "^4.0.2",
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",

@@ -140,7 +140,7 @@ describe('base', () => {
   });
 
   it('async parallel predict', function (done) {
-    this.timeout(20000);
+    this.timeout(120000);
     const m = xgb.XGModel('test/data/iris.xg.model');
     const input = [
       { array: [5.1, 3.5, 1.4, 0.2], type: 0 }, // class 0

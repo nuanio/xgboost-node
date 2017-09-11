@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var bindings = require("bindings");
 var fs = require("fs");
+var async = require("async");
 var xgb = bindings('xgboost');
 function validateInput(input, typeInvalid, typeError) {
     var value;
@@ -209,6 +210,16 @@ function matrixFromCSR(data, indptr, indices, n) {
     }
 }
 exports.matrixFromCSR = matrixFromCSR;
+// queue for xgboost task, libuv thread is not safe for xgboost
+function setupQueue() {
+    return async.queue(function (task, callback) {
+        task.model.predictAsync(task.mat, task.mask, task.ntree, function (err, res) {
+            task.callback(err, res);
+            callback();
+        });
+    }, 1);
+}
+var taskQueue = setupQueue();
 // XGModel Object
 /**
  * @property model {internal} - private property
@@ -296,7 +307,8 @@ var XGModelBase = (function () {
                     || ![0, 1, 2, 4].includes(mask)
                     || !Number.isInteger(ntree),
                 TypeError('mask and ntree should be Integer'),
-            ], [
+            ],
+            [
                 typeof callback !== 'function',
                 TypeError('callback should be a Function'),
             ],
@@ -304,8 +316,13 @@ var XGModelBase = (function () {
         if (typeError) {
             return callback(typeError, null);
         }
-        return this.model.predictAsync(xgmatrix.matrix, mask, ntree, callback);
-        ;
+        taskQueue.push({
+            model: this.model,
+            mat: xgmatrix.matrix,
+            mask: mask,
+            ntree: ntree,
+            callback: callback,
+        });
     };
     return XGModelBase;
 }());

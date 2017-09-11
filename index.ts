@@ -1,5 +1,6 @@
 import * as bindings from 'bindings';
 import * as fs from 'fs';
+import * as async from 'async';
 
 const xgb = bindings('xgboost');
 
@@ -225,6 +226,17 @@ export interface Predictor {
     callback: (err: Error | null | undefined, res: Float32Array) => any): any;
 }
 
+// queue for xgboost task, libuv thread is not safe for xgboost
+function setupQueue(){
+  return async.queue((task, callback)=>{
+    task.model.predictAsync(task.mat, task.mask, task.ntree, (err, res)=>{
+      task.callback(err, res);
+      callback();
+    });
+  },1);
+}
+const taskQueue = setupQueue();
+
 // XGModel Object
 /**
  * @property model {internal} - private property
@@ -328,7 +340,13 @@ class XGModelBase {
     if (typeError) {
       return callback(typeError, null);
     }
-    return this.model.predictAsync(xgmatrix.matrix, mask, ntree, callback));
+    taskQueue.push({
+      model: this.model,
+      mat: xgmatrix.matrix,
+      mask,
+      ntree,
+      callback,
+    });
   }
 }
 
