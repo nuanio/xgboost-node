@@ -319,7 +319,8 @@ class XGModelBase {
           || ![0, 1, 2, 4].includes(mask)
           || !Number.isInteger(ntree),
           TypeError('mask and ntree should be Integer'),
-        ], [
+        ],
+        [
           typeof callback !== 'function',
           TypeError('callback should be a Function'),
         ],
