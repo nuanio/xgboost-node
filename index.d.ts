@@ -33,6 +33,7 @@ export declare function matrixFromCSC(data: Float32Array, indptr: Uint32Array, i
 export declare function matrixFromCSR(data: Float32Array, indptr: Uint32Array, indices: Uint32Array, n?: number): object;
 export interface Predictor {
     predict(matrix: object, mask: number, ntree: number): any;
+    predictAsync(matrix: object, mask: number, ntree: number, callback: (err: Error | null | undefined, res: Float32Array) => any): any;
 }
 /**
  * @param file {string} - model file path

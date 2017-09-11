@@ -263,6 +263,50 @@ var XGModelBase = (function () {
             return new Result(err);
         }
     };
+    // Predict result - Async
+    /**
+     * @param xgmatrix {XGMatrix} - input data, created from dataFrom*() functions
+     * @param mask {Integer}[0] - options taken in prediction, possible values
+     *          0:normal prediction
+     *          1:output margin instead of transformed value
+     *          2:output leaf index of trees instead of leaf value, note leaf index is unique per tree
+     *          4:output feature contributions to individual predictions
+     * @param ntree {Integer}[0] - limit number of trees used for prediction, this is only valid for boosted trees
+     * when the parameter is set to 0, we will use all the trees
+     * @param callback {Function} - callback function
+     */
+    XGModelBase.prototype.predictAsync = function (xgmatrix, mask, ntree, callback) {
+        if (mask === void 0) { mask = 0; }
+        if (ntree === void 0) { ntree = 0; }
+        var typeError = typeCheckList([
+            [
+                this.error !== undefined,
+                this.error,
+            ],
+            [
+                !(xgmatrix instanceof XGMatrix),
+                TypeError('input should be XGMatrix'),
+            ],
+            [
+                xgmatrix instanceof XGMatrix && xgmatrix.error !== undefined,
+                xgmatrix instanceof XGMatrix && xgmatrix.error,
+            ],
+            [
+                !Number.isInteger(mask)
+                    || ![0, 1, 2, 4].includes(mask)
+                    || !Number.isInteger(ntree),
+                TypeError('mask and ntree should be Integer'),
+            ], [
+                typeof callback !== 'function',
+                TypeError('callback should be a Function'),
+            ],
+        ]);
+        if (typeError) {
+            return callback(typeError, null);
+        }
+        return this.model.predictAsync(xgmatrix.matrix, mask, ntree, callback);
+        ;
+    };
     return XGModelBase;
 }());
 // Create xgboost model from file

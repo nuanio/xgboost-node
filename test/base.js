@@ -1,5 +1,6 @@
 const xgb = require('../index');
 const expect = require('chai').expect;
+const async = require('async');
 
 describe('base', () => {
   it('loads a model', () => {
@@ -91,6 +92,7 @@ describe('base', () => {
     const denseMatrix = xgb.matrix(dense, 3, 4, NaN);
     const m = xgb.XGModel('test/data/iris.xg.model');
     const denseRes = m.predict(denseMatrix).value;
+    console.log(denseRes);
     const csrRes = m.predict(sparseCSR).value;
     const cscRes = m.predict(sparseCSC).value;
     denseRes.forEach((v, index) => {
@@ -105,7 +107,7 @@ describe('base', () => {
       new Uint32Array([0, 1, 4, 7, 10]),
       new Uint32Array([0, 0, 1, 2, 0, 1, 2, 0, 1, 2]),
       2);
-      expect(sparseCSC.error).to.be.an('error');
+    expect(sparseCSC.error).to.be.an('error');
   });
 
   it('prediction error', () => {
@@ -113,5 +115,70 @@ describe('base', () => {
     const input = undefined;
     const result = m.predict(input);
     expect(result.error).to.be.an('error');
+  });
+
+  it('async predict', (done) => {
+    const m = xgb.XGModel('test/data/iris.xg.model');
+    const input = new Float32Array([
+      5.1, 3.5, 1.4, 0.2, // class 0
+      6.6, 3.0, 4.4, 1.4, // class 1
+      5.9, 3.0, 5.1, 1.8, // class 2
+    ]);
+    const mat = new xgb.matrix(input, 3, 4, NaN);
+    m.predictAsync(mat, 0, 0, (err, result) => {
+      // [
+      //   0, 1, 2,
+      //   3, 4, 5,
+      //   6, 7, 8,
+      // ]
+      expect(err).to.be.null;
+      expect(result[0] > 0.9).to.be.true; // class 0
+      expect(result[4] > 0.9).to.be.true; // class 1
+      expect(result[8] > 0.9).to.be.true; // class 2
+      done();
+    });
+  });
+
+  it('async parallel predict', function (done) {
+    this.timeout(20000);
+    const m = xgb.XGModel('test/data/iris.xg.model');
+    const input = [
+      { array: [5.1, 3.5, 1.4, 0.2], type: 0 }, // class 0
+      { array: [6.6, 3.0, 4.4, 1.4], type: 1 }, // class 1
+      { array: [5.9, 3.0, 5.1, 1.8], type: 2 }, // class 2
+    ];
+    let i = 0;
+    tasks = [];
+    function checkAsync(mat, mask, ntree, type, callback) {
+      mat = new xgb.matrix(mat, 1, 4, NaN);
+      m.predictAsync(mat, mask, ntree, (err, res) => {
+        expect(err).to.be.null;
+        expect(res[type] > 0.9);
+        callback();
+      });
+    }
+    while (i < 50000) {
+      input.forEach((v) => {
+        const task = async.apply(checkAsync,
+          new Float32Array(v.array), 0, 0, v.type
+        );
+        tasks.push(task);
+      });
+      i++;
+    }
+    async.parallelLimit(tasks, 10000, (err) => {
+      console.log('async.parallel tasks end');
+      expect(err).to.be.null;
+      done();
+    });
+    console.log('async.parallel tasks begin');
+  });
+
+  it('async error', function (done) {
+    const m = xgb.XGModel('test/data/iris.xg.model');
+    m.predictAsync(null, null, null, (err, res) => {
+      expect(err).to.be.an('Error');
+      done();
+    });
   });
 });
