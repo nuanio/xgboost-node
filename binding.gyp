@@ -10,6 +10,7 @@
       "include_dirs": [
         "<!(node -e \"require('nan')\")",
         "./xgboost/include/xgboost",
+        "./xgboost/dmlc-core/include",
         "./xgboost/rabit/include"
       ],
       "ccflags": [
