@@ -13,6 +13,8 @@
         "./xgboost/dmlc-core/include",
         "./xgboost/rabit/include"
       ],
+      "cflags!": [ "-fno-exceptions" ],
+      "cflags_cc!": [ "-fno-exceptions" ],
       "ccflags": [
         "-g",
         "-std=c++11",
