@@ -17,7 +17,8 @@
         "-g",
         "-std=c++11",
         "-Wall",
-        "-Wextra"
+        "-Wextra",
+        "-fexceptions"
       ],
       "variables": {
         "OMP": "<!(cat ./xgboost/rabit/lib/flag)"
