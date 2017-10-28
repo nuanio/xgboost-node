@@ -215,6 +215,7 @@ function setupQueue() {
     return async.queue(function (task, callback) {
         task.model.predictAsync(task.mat, task.mask, task.ntree, function (err, res) {
             task.callback(err, res);
+            task = undefined;
             callback();
         });
     }, 1);

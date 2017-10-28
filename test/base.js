@@ -181,4 +181,9 @@ describe('base', () => {
       done();
     });
   });
+
+  it('restore matrix error', function () {
+    const m = xgb.restoreMatrix('test/data/iris.xg.model');
+    expect(m.error).to.be.an('Error');
+  });
 });
