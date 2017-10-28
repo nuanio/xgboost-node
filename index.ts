@@ -227,7 +227,7 @@ export interface Predictor {
 }
 
 // queue for xgboost task, libuv thread is not safe for xgboost
-function setupQueue() {
+const taskQueue = function setupQueue() {
   return async.queue((task, callback) => {
     task.model.predictAsync(task.mat, task.mask, task.ntree, (err, res) => {
       task.callback(err, res);
@@ -235,8 +235,7 @@ function setupQueue() {
       callback();
     });
   }, 1);
-}
-const taskQueue = setupQueue();
+}();
 
 // XGModel Object
 /**

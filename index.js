@@ -211,7 +211,7 @@ function matrixFromCSR(data, indptr, indices, n) {
 }
 exports.matrixFromCSR = matrixFromCSR;
 // queue for xgboost task, libuv thread is not safe for xgboost
-function setupQueue() {
+var taskQueue = function setupQueue() {
     return async.queue(function (task, callback) {
         task.model.predictAsync(task.mat, task.mask, task.ntree, function (err, res) {
             task.callback(err, res);
@@ -219,8 +219,7 @@ function setupQueue() {
             callback();
         });
     }, 1);
-}
-var taskQueue = setupQueue();
+}();
 // XGModel Object
 /**
  * @property model {internal} - private property
