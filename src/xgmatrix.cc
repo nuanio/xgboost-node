@@ -296,10 +296,16 @@ int XGMatrix::FromFile(const Nan::FunctionCallbackInfo<v8::Value> &info,
   auto fname = info[1]->ToString();
   String::Utf8Value value(fname);
   auto cstr = *value ? *value : "<string conversion failed>";
-  if (XGDMatrixCreateFromFile(cstr, 1, &res))
-  {
-    Nan::ThrowTypeError(XGBGetLastError());
+  try {
+    if (XGDMatrixCreateFromFile(cstr, 1, &res))
+    {
+      Nan::ThrowTypeError(XGBGetLastError());
+      return 1;
+    }
+  } catch (dmlc::Error& e) {
+    Nan::ThrowTypeError(e.what());
     return 1;
   }
+
   return 0;
 }

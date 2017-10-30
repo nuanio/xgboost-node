@@ -33,7 +33,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "bindings": "^1.2.1",
-    "nan": "^2.6.2"
+    "nan": "^2.6.2",
+    "async": "^2.5.0"
   },
   "devDependencies": {
     "@types/node": "^8.0.9",

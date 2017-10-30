@@ -30,6 +30,8 @@
 <dd></dd>
 <dt><a href="#user-content-XGModel-predict">XGModel.predict(xgmatrix, mask = 0, ntree = 0)</a> ⇒ <code>Result</code></dt>
 <dd></dd>
+<dt><a href="#user-content-XGModel-predictAsync">XGModel.predictAsync(xgmatrix, mask = 0, ntree = 0, cb: (err, res: Float32Array | null) => {})</a></dt>
+<dd></dd>
 <dt><a href="#Result"><code>Result</code></a></dt>
 <dd></dd>
 </dl>
@@ -190,6 +192,26 @@ const model = xgboost.XGModel('test/data/iris.xg.model');
 
 ```js
 model.predict(mat);
+```
+
+<a name="XGModel.predictAsync" id="XGModel-predictAsync"></a>
+
+## XGModel.predictAsync(xgmatrix, mask = 0, ntree = 0, cb: (err, res: Float32Array | null) => {})
+
+**Kind**: member function
+
+| Param | Type | Description |
+| --- | --- | --- |
+| matrix | <code>XGMatrix</code> | input matrix |
+| mask | <code>Integer = 0</code> | options taken in prediction, possible values, <br/> 0:normal prediction, <br/>1:output margin instead of transformed value, <br/>2:output leaf index of trees instead of leaf value, note leaf index is unique per tree, <br/>4:output feature contributions to individual predictions |
+| ntree | <code>Integer = 0</code> | limit number of trees used for prediction, <br/> this is only valid for boosted trees when the parameter is set to 0, <br/>  we will use all the trees |
+| cb    | <code>Function</code> | callback function to accept error status and a Float32Array result |
+
+```js
+model.predictAsync(mat, 0, 0, (err, res) => {
+  console.log(err);
+  console.log(res);
+});
 ```
 
 <a name="Result"></a>

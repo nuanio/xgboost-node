@@ -4,6 +4,7 @@
 #include <node.h>
 #include <v8.h>
 #include <nan.h>
+
 #include <string.h>
 #include <iostream>
 #include <sstream>
@@ -11,6 +12,7 @@
 #include <vector>
 
 #include "c_api.h"
+#include "dmlc/logging.h"
 #include <memory>
 
 using namespace std;

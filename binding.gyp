@@ -10,13 +10,17 @@
       "include_dirs": [
         "<!(node -e \"require('nan')\")",
         "./xgboost/include/xgboost",
+        "./xgboost/dmlc-core/include",
         "./xgboost/rabit/include"
       ],
+      "cflags!": [ "-fno-exceptions" ],
+      "cflags_cc!": [ "-fno-exceptions" ],
       "ccflags": [
         "-g",
         "-std=c++11",
         "-Wall",
-        "-Wextra"
+        "-Wextra",
+        "-fexceptions"
       ],
       "variables": {
         "OMP": "<!(cat ./xgboost/rabit/lib/flag)"

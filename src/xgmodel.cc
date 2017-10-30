@@ -26,6 +26,7 @@ void XGModel::Init(v8::Local<v8::Object> exports)
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
   Nan::SetPrototypeMethod(tpl, "predict", Predict);
+  Nan::SetPrototypeMethod(tpl, "predictAsync", PredictAsync);
 
   constructor.Reset(tpl->GetFunction());
   exports->Set(Nan::New("CXGModel").ToLocalChecked(), tpl->GetFunction());
@@ -48,7 +49,15 @@ void XGModel::Predict(const Nan::FunctionCallbackInfo<v8::Value> &info)
   XGModel *obj = Nan::ObjectWrap::Unwrap<XGModel>(info.Holder());
   bst_ulong out_len;
   const float *out_result;
-  XGBoosterPredict(obj->handle, mat->GetHandle(), info[MASK]->Uint32Value(), info[NTREE]->Uint32Value(), &out_len, &out_result);
+
+  auto status = XGBoosterPredict(obj->handle, mat->GetHandle(), info[MASK]->Uint32Value(), info[NTREE]->Uint32Value(), &out_len, &out_result);
+
+  if (status != 0)
+  {
+    Nan::ThrowTypeError(XGBGetLastError());
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
 
   Local<v8::Float32Array> array = Float32Array::New(ArrayBuffer::New(Isolate::GetCurrent(), out_len * sizeof(float)), 0, out_len);
   Nan::TypedArrayContents<float> vfloat(array);
@@ -98,7 +107,7 @@ void XGModel::New(const Nan::FunctionCallbackInfo<v8::Value> &info)
   {
     // Invoked as plain function `MyObject(...)`, turn into construct call.
     size_t argc = info.Length();
-    std::unique_ptr<v8::Local<v8::Value>[]> argvp(new v8::Local<v8::Value>[ argc ]);
+    std::unique_ptr<v8::Local<v8::Value>[]> argvp(new v8::Local<v8::Value>[argc]);
     auto argv = argvp.get();
     for (size_t i = 0; i != argc; i++)
     {
@@ -109,4 +118,61 @@ void XGModel::New(const Nan::FunctionCallbackInfo<v8::Value> &info)
     info.GetReturnValue().Set(Nan::NewInstance(cons, argc, argv).ToLocalChecked());
     return;
   }
+}
+
+void XGModel::PredictAsync(const Nan::FunctionCallbackInfo<v8::Value> &info)
+{
+  Nan::HandleScope scope;
+  const size_t MATRIX = 0;
+  const size_t MASK = 1;
+  const size_t NTREE = 2;
+  const size_t CALLBACK = 3;
+  if (info.Length() != 4 || !info[MATRIX]->IsObject() || !info[MASK]->IsNumber() || !info[NTREE]->IsNumber() || !info[CALLBACK]->IsFunction())
+  {
+    Nan::ThrowTypeError("Wrong arguments");
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
+  XGMatrix *mat = Nan::ObjectWrap::Unwrap<XGMatrix>(info[0]->ToObject());
+  XGModel *obj = Nan::ObjectWrap::Unwrap<XGModel>(info.Holder());
+  auto mask = info[MASK]->Uint32Value();
+  auto ntree = info[NTREE]->Uint32Value();
+
+  Nan::Callback *callback = new Nan::Callback(info[CALLBACK].As<Function>());
+
+  Nan::AsyncQueueWorker(new PredictWorker(callback, obj->handle, mat->GetHandle(), mask, ntree));
+
+  info.GetReturnValue().SetUndefined();
+  return;
+}
+
+void PredictWorker::Execute()
+{
+  auto status = XGBoosterPredict(booster_handle, mat_handle, mask, ntree, &out_len, &out_result);
+  if (status != 0)
+  {
+    SetErrorMessage(XGBGetLastError());
+  }
+  return;
+}
+
+// Executed when the async work is complete
+// this function will be run inside the main event loop
+// so it is safe to use V8 again
+void PredictWorker::HandleOKCallback()
+{
+  Nan::EscapableHandleScope scope;
+
+  Local<v8::Float32Array> array = Float32Array::New(ArrayBuffer::New(Isolate::GetCurrent(), out_len * sizeof(float)), 0, out_len);
+  Nan::TypedArrayContents<float> vfloat(array);
+  for (size_t i = 0; i < out_len; i++)
+  {
+    (*vfloat)[i] = out_result[i];
+  }
+
+  Local<Value> argv[] = {
+      Nan::Null(), scope.Escape(array)};
+
+  callback->Call(2, argv);
+  return;
 }
